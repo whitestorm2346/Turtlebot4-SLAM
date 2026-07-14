@@ -1,0 +1,3 @@
+slam_manager:
+  ros__parameters:
+    slam_backend: "rtabmap"
