@@ -2,27 +2,107 @@ import os
 from glob import glob
 from setuptools import find_packages, setup
 
+
 package_name = 'tb4_slam_bringup'
+
+
+def package_files(directory):
+    paths = []
+
+    for path, _, filenames in os.walk(directory):
+        if not filenames:
+            continue
+
+        install_path = os.path.join(
+            'share',
+            package_name,
+            path
+        )
+
+        files = [
+            os.path.join(path, filename)
+            for filename in filenames
+        ]
+
+        paths.append(
+            (install_path, files)
+        )
+
+    return paths
+
 
 setup(
     name=package_name,
     version='0.0.0',
+
     packages=find_packages(),
+
     data_files=[
-        ('share/ament_index/resource_index/packages',
-            ['resource/' + package_name]),
-        ('share/' + package_name, ['package.xml']),
-        (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
-        (os.path.join('share', package_name, 'config'), glob('config/*.yaml')),
-        (os.path.join('share', package_name, 'rviz'), glob('rviz/*')),
+        (
+            'share/ament_index/resource_index/packages',
+            ['resource/' + package_name]
+        ),
+
+        (
+            'share/' + package_name,
+            ['package.xml']
+        ),
+
+        (
+            os.path.join(
+                'share',
+                package_name,
+                'launch'
+            ),
+            glob('launch/*.launch.py')
+        ),
+
+        (
+            os.path.join(
+                'share',
+                package_name,
+                'config'
+            ),
+            glob('config/*.yaml')
+        ),
+
+        (
+            os.path.join(
+                'share',
+                package_name,
+                'rviz'
+            ),
+            glob('rviz/*')
+        ),
+
+        (
+            os.path.join(
+                'share',
+                package_name,
+                'worlds'
+            ),
+            glob('worlds/*.sdf')
+        ),
+
+    ] + package_files('models'),
+
+    install_requires=[
+        'setuptools'
     ],
-    install_requires=['setuptools'],
+
     zip_safe=True,
+
     maintainer='tsehsun',
     maintainer_email='tsehsun@example.com',
+
     description='TurtleBot4 SLAM bringup package',
+
     license='Apache-2.0',
-    tests_require=['pytest'],
+
+    tests_require=[
+        'pytest'
+    ],
+
     entry_points={
         'console_scripts': [
         ],

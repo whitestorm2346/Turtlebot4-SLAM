@@ -10,13 +10,21 @@ from launch.actions import (
     SetEnvironmentVariable,
 )
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import (
+    LaunchConfiguration,
+    PathJoinSubstitution,
+    PythonExpression,
+)
 from launch_ros.actions import Node
 
 
 def generate_launch_description():
     turtlebot4_gz_bringup_dir = get_package_share_directory(
         'turtlebot4_gz_bringup'
+    )
+
+    tb4_slam_bringup_dir = get_package_share_directory(
+        'tb4_slam_bringup'
     )
 
     turtlebot4_description_dir = get_package_share_directory(
@@ -53,6 +61,12 @@ def generate_launch_description():
             description='Gazebo world'
         ),
         DeclareLaunchArgument(
+            'gui',
+            default_value='false',
+            choices=['true', 'false'],
+            description='Start Gazebo GUI'
+        ),
+        DeclareLaunchArgument(
             'model',
             default_value='standard',
             choices=['standard', 'lite'],
@@ -81,6 +95,14 @@ def generate_launch_description():
         name='GZ_SIM_RESOURCE_PATH',
         value=':'.join([
             os.path.join(
+                tb4_slam_bringup_dir,
+                'worlds'
+            ),
+            os.path.join(
+                tb4_slam_bringup_dir,
+                'models'
+            ),
+            os.path.join(
                 turtlebot4_gz_bringup_dir,
                 'worlds'
             ),
@@ -106,14 +128,17 @@ def generate_launch_description():
             gz_sim_launch
         ]),
         launch_arguments={
-            'gz_args': [
+            'gz_args': PythonExpression([
+                "'",
                 LaunchConfiguration('world'),
-                '.sdf',
-                ' -r',
-                ' -s',
-                ' --headless-rendering',
-                ' -v 4',
-            ]
+                ".sdf -r -v 4",
+                "' if '",
+                LaunchConfiguration('gui'),
+                "' == 'true' else '",
+                LaunchConfiguration('world'),
+                ".sdf -r -s --headless-rendering -v 4",
+                "'"
+            ])
         }.items()
     )
 

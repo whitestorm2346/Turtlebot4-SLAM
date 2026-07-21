@@ -1,7 +1,8 @@
 import os
 
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
@@ -14,6 +15,23 @@ def generate_launch_description():
         'turtlebot4_navigation'
     )
 
+    world_arg = DeclareLaunchArgument(
+        'world',
+        default_value='warehouse',
+        description='Gazebo simulation world'
+    )
+
+    world = LaunchConfiguration('world')
+
+    gui_arg = DeclareLaunchArgument(
+        'gui',
+        default_value='false',
+        choices=['true', 'false'],
+        description='Start Gazebo GUI'
+    )
+
+    gui = LaunchConfiguration('gui')
+
     sim_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
@@ -23,7 +41,8 @@ def generate_launch_description():
             )
         ),
         launch_arguments={
-            'world': 'warehouse',
+            'world': world,
+            'gui': gui,
             'model': 'standard',
             'rviz': 'false',
             'namespace': '',
@@ -94,6 +113,8 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        world_arg,
+        gui_arg,
         sim_launch,
         rtabmap_launch,
         official_nav2, 
