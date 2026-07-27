@@ -24,7 +24,9 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'loop_closure_manager = tb4_loop_closure.loop_closure_manager:main',
+            "loop_closure_manager = tb4_loop_closure.loop_closure_manager:main",
+            "inspect_pose_graph = tb4_loop_closure.scripts.inspect_pose_graph:main",
+            "loop_verification_node = tb4_loop_closure.nodes.loop_verification_node:main",
         ],
     },
 )
