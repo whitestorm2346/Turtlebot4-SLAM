@@ -34,6 +34,17 @@ def generate_launch_description():
             'qos': '2',
             # 'log_level': 'debug',
 
+            # 'launch_prefix': (
+            #     'xterm -hold '
+            #     '-fa "Monospace" '
+            #     '-fs 16 '
+            #     '-e gdb -q '
+            #     '-ex "set pagination off" '
+            #     '-ex "catch throw" '
+            #     '-ex "run" '
+            #     '--args'
+            # ),
+
             # RTAB-Map grid / octomap settings
             'args': (
                 '--delete_db_on_start '
@@ -54,7 +65,7 @@ def generate_launch_description():
                 # Visual transformation verification
                 # '--Vis/MinInliers 20 '
                 '--Vis/MinInliers 10 '
-                '--Vis/MinInliersDistribution 0.05 '
+                # '--Vis/MinInliersDistribution 0.05 '
                 '--Vis/MinInliersDistribution 0.0 '
 
                 # Reject graph constraints producing excessive optimization error
