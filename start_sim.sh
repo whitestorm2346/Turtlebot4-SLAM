@@ -10,6 +10,15 @@ WS_DIR="$SCRIPT_DIR"
 source /opt/ros/jazzy/setup.bash
 source "$WS_DIR/install/setup.bash"
 
+# Fix FastCDR symbol conflict with librealsense2
+FASTCDR_LIB="/opt/ros/jazzy/lib/libfastcdr.so.2"
+
+if [[ -n "${LD_PRELOAD:-}" ]]; then
+    export LD_PRELOAD="${FASTCDR_LIB}:${LD_PRELOAD}"
+else
+    export LD_PRELOAD="${FASTCDR_LIB}"
+fi
+
 
 # ==========================================
 # Arrow-key menu function
@@ -124,10 +133,11 @@ echo "======================================"
 echo "Starting TurtleBot4 SLAM"
 echo "======================================"
 echo
-echo "World      : $WORLD"
-echo "Gazebo GUI : $GUI"
+echo "World       : $WORLD"
+echo "Gazebo GUI  : $GUI"
+echo "Exploration : frontier_exploration_ros2"
 echo
 
-ros2 launch tb4_slam_bringup full_system.launch.py \
+exec ros2 launch tb4_slam_bringup full_system.launch.py \
     world:="$WORLD" \
     gui:="$GUI"

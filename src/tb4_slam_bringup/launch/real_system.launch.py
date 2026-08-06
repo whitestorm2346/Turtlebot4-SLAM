@@ -1,87 +1,80 @@
 import os
 
-from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
-from launch.conditions import IfCondition
-from launch.substitutions import LaunchConfiguration
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
+
+from launch import LaunchDescription
+from launch.actions import (
+    DeclareLaunchArgument,
+    IncludeLaunchDescription,
+)
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    bringup_dir = get_package_share_directory('tb4_slam_bringup')
+    bringup_dir = get_package_share_directory(
+        'tb4_slam_bringup'
+    )
 
     turtlebot4_navigation_dir = get_package_share_directory(
         'turtlebot4_navigation'
-    )
-
-    tb4_slam_bringup_dir = get_package_share_directory(
-        'tb4_slam_bringup'
     )
 
     frontier_exploration_dir = get_package_share_directory(
         'frontier_exploration_ros2'
     )
 
-    world_arg = DeclareLaunchArgument(
-        'world',
-        default_value='warehouse',
-        description='Gazebo simulation world'
+    # ==========================================
+    # Launch arguments
+    # ==========================================
+
+    namespace_arg = DeclareLaunchArgument(
+        'namespace',
+        default_value='',
+        description='Robot namespace'
     )
 
-    world = LaunchConfiguration('world')
-
-    gui_arg = DeclareLaunchArgument(
-        'gui',
-        default_value='false',
-        choices=['true', 'false'],
-        description='Start Gazebo GUI'
+    model_arg = DeclareLaunchArgument(
+        'model',
+        default_value='standard',
+        choices=['standard', 'lite'],
+        description='TurtleBot4 model'
     )
-
-    gui = LaunchConfiguration('gui')
 
     use_sim_time_arg = DeclareLaunchArgument(
         'use_sim_time',
-        default_value='true',
+        default_value='false',
         choices=['true', 'false'],
         description='Use simulation clock'
     )
 
+    namespace = LaunchConfiguration('namespace')
+    model = LaunchConfiguration('model')
     use_sim_time = LaunchConfiguration('use_sim_time')
 
-    frontier_explorer_launch = os.path.join(
-        frontier_exploration_dir,
-        'launch',
-        'frontier_explorer.launch.py',
-    )
+    # ==========================================
+    # Real TurtleBot4 hardware
+    # ==========================================
 
-    frontier_explorer_params = os.path.join(
-        tb4_slam_bringup_dir,
-        'config',
-        'frontier_exploration_ros2.yaml',
-    )
-
-    sim_launch = IncludeLaunchDescription(
+    robot_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
                 bringup_dir,
                 'launch',
-                'sim.launch.py'
+                'robot.launch.py'
             )
         ),
         launch_arguments={
-            'world': world,
-            'gui': gui,
-            'model': 'standard',
-            'rviz': 'false',
-            'namespace': '',
-            'x': '0.0',
-            'y': '0.0',
-            'z': '0.0',
-            'yaw': '0.0',
+            'namespace': namespace,
+            'model': model,
+            'use_sim_time': use_sim_time,
         }.items()
     )
+
+    # ==========================================
+    # RTAB-Map + ROVER
+    # ==========================================
 
     rtabmap_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -96,13 +89,17 @@ def generate_launch_description():
         }.items()
     )
 
-    custom_nav2_params = os.path.join(
+    # ==========================================
+    # Nav2
+    # ==========================================
+
+    nav2_params = os.path.join(
         bringup_dir,
         'config',
         'nav2_custom.yaml'
     )
 
-    official_nav2 = IncludeLaunchDescription(
+    nav2_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
                 turtlebot4_navigation_dir,
@@ -112,23 +109,43 @@ def generate_launch_description():
         ),
         launch_arguments={
             'use_sim_time': use_sim_time,
-            'namespace': '',
-            'params_file': custom_nav2_params,
+            'namespace': namespace,
+            'params_file': nav2_params,
         }.items()
+    )
+
+    # ==========================================
+    # Frontier exploration
+    # ==========================================
+
+    frontier_launch_file = os.path.join(
+        frontier_exploration_dir,
+        'launch',
+        'frontier_explorer.launch.py'
+    )
+
+    frontier_params = os.path.join(
+        bringup_dir,
+        'config',
+        'frontier_exploration_ros2.yaml'
     )
 
     frontier_explorer = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            frontier_explorer_launch
+            frontier_launch_file
         ),
         launch_arguments={
             'use_sim_time': use_sim_time,
             'autostart': 'true',
             'control_service_enabled': 'false',
-            'params_file': frontier_explorer_params,
+            'params_file': frontier_params,
             'log_level': 'info',
-        }.items(),
+        }.items()
     )
+
+    # ==========================================
+    # SLAM manager
+    # ==========================================
 
     slam_config = os.path.join(
         bringup_dir,
@@ -140,6 +157,7 @@ def generate_launch_description():
         package='tb4_slam_core',
         executable='slam_manager',
         name='slam_manager',
+        namespace=namespace,
         output='screen',
         parameters=[
             slam_config,
@@ -150,12 +168,13 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        world_arg,
-        gui_arg,
+        namespace_arg,
+        model_arg,
         use_sim_time_arg,
-        sim_launch,
+
+        robot_launch,
         rtabmap_launch,
-        official_nav2, 
+        nav2_launch,
         slam_manager,
         frontier_explorer,
     ])

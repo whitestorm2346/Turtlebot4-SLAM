@@ -25,8 +25,6 @@ setup(
     entry_points={
         'console_scripts': [
             'slam_manager = tb4_slam_core.slam_manager:main',
-            'exploration_manager = tb4_slam_core.exploration_manager:main',
-            # 'map_visualizer = tb4_exploration.map_visualizer:main',
         ],
     },
 )

@@ -82,7 +82,8 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             'z',
-            default_value='0.0'
+            default_value='0.02',
+            description='Robot spawn height above the ground',
         ),
         DeclareLaunchArgument(
             'yaw',
@@ -142,10 +143,16 @@ def generate_launch_description():
         }.items()
     )
 
+    # robot_spawn_launch = PathJoinSubstitution([
+    #     turtlebot4_gz_bringup_dir,
+    #     'launch',
+    #     'turtlebot4_spawn.launch.py'
+    # ])
+
     robot_spawn_launch = PathJoinSubstitution([
-        turtlebot4_gz_bringup_dir,
+        tb4_slam_bringup_dir,
         'launch',
-        'turtlebot4_spawn.launch.py'
+        'turtlebot4_spawn_no_dock.launch.py'
     ])
 
     robot_spawn = IncludeLaunchDescription(

@@ -18,12 +18,30 @@ class ExplorationManager(Node):
     def __init__(self):
         super().__init__('exploration_manager')
 
-        self.declare_parameter('exploration_method', 'frontier')
-        method_name = self.get_parameter('exploration_method').value
+        self.declare_parameter(
+            'exploration_method',
+            'frontier'
+        )
 
-        self.get_logger().info(f'Selected exploration method: {method_name}')
+        exploration_method = (
+            self.get_parameter('exploration_method')
+            .get_parameter_value()
+            .string_value
+        )
 
-        self.explorer = create_explorer(method_name, self)
+        self.get_logger().info(
+            f'Exploration method: {exploration_method}'
+        )
+
+        try:
+            self.explorer = create_explorer(
+                exploration_method,
+                self
+            )
+        except ValueError as error:
+            self.get_logger().error(str(error))
+            raise
+        
         self.explorer.start()
 
         self.latest_map = None

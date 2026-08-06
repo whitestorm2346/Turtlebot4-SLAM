@@ -1,13 +1,26 @@
 import os
 
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
+from launch.actions import (
+    IncludeLaunchDescription,
+    DeclareLaunchArgument,
+)
+from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
     rtabmap_launch_dir = get_package_share_directory('rtabmap_launch')
+
+    use_sim_time_arg = DeclareLaunchArgument(
+        'use_sim_time',
+        default_value='true',
+        choices=['true', 'false'],
+        description='Use simulation clock'
+    )
+
+    use_sim_time = LaunchConfiguration('use_sim_time')
 
     rtabmap = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -18,7 +31,7 @@ def generate_launch_description():
             )
         ),
         launch_arguments={
-            'use_sim_time': 'true',
+            'use_sim_time': use_sim_time,
             'frame_id': 'base_link',
             'rgb_topic': '/oakd/rgb/preview/image_raw',
             'depth_topic': '/oakd/rgb/preview/depth',
@@ -83,5 +96,6 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        rtabmap
+        rtabmap,
+        use_sim_time_arg,
     ])

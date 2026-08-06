@@ -14,7 +14,6 @@
   <depend>sensor_msgs</depend>
 
   <depend>tb4_slam_backends</depend>
-  <depend>tb4_exploration</depend>
   <depend>tb4_slam_utils</depend>
   <depend>nav2_msgs</depend>
 
